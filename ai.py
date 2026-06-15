@@ -15,7 +15,10 @@ When given an English word or expression, respond ONLY with a JSON object in thi
   "meaning_ko": "한국어 뜻 (핵심 의미 1~2줄)",
   "examples": [
     {"en": "example sentence 1", "ko": "한국어 번역 1"},
-    {"en": "example sentence 2", "ko": "한국어 번역 2"}
+    {"en": "example sentence 2", "ko": "한국어 번역 2"},
+    {"en": "example sentence 3", "ko": "한국어 번역 3"},
+    {"en": "example sentence 4", "ko": "한국어 번역 4"},
+    {"en": "example sentence 5", "ko": "한국어 번역 5"}
   ],
   "synonyms": ["synonym1", "synonym2", "synonym3"],
   "context": "이 표현이 주로 쓰이는 상황이나 뉘앙스 설명 (1~2문장)",
