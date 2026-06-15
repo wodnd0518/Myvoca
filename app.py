@@ -54,26 +54,18 @@ with tab_search:
         st.divider()
         st.markdown("#### 단어장에 저장")
 
+        auto_tags = r.get("tags") or []
+        if auto_tags:
+            st.markdown("**자동 태그** &nbsp; " + "  ".join(f"`{t}`" for t in auto_tags))
+
         memo = st.text_area("메모 (선택)", placeholder="나만의 메모를 남겨보세요", key="memo_input")
-
-        all_tags = db.fetch_all_tags()
-        tag_input = st.text_input(
-            "태그 (쉼표로 구분)",
-            placeholder="e.g.  비즈니스, 일상, IELTS",
-            key="tag_input",
-        )
-        new_tags = [t.strip() for t in tag_input.split(",") if t.strip()]
-
-        if all_tags:
-            st.caption("기존 태그: " + "  ".join(f"`{t}`" for t in all_tags))
 
         if st.button("💾 저장", type="primary", use_container_width=True):
             try:
-                db.save_word(r, memo, new_tags)
+                db.save_word(r, memo, auto_tags)
                 st.success(f"**{r['word']}** 저장 완료!")
                 st.session_state.pop("last_result")
                 st.session_state.pop("memo_input", None)
-                st.session_state.pop("tag_input", None)
                 st.rerun()
             except Exception as e:
                 st.error(f"저장 실패: {e}")
