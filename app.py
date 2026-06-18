@@ -376,20 +376,14 @@ with tab_bulk:
             hide_index=True,
         )
 
-        col_save, col_cancel = st.columns([3, 1])
-        with col_cancel:
-            if st.button("취소", use_container_width=True):
-                st.session_state.pop("bulk_parsed", None)
-                st.rerun()
-        with col_save:
-            if st.button("💾 AI 분석 & 저장", type="primary", use_container_width=True):
-                with st.spinner(f"{len(parsed)}개 분석 중..."):
-                    try:
-                        results = ai.lookup_bulk(parsed)
-                        for r in results:
-                            db.save_word(r, "", r.get("tags", []))
-                        st.success(f"{len(results)}개 저장 완료!")
-                        st.session_state.pop("bulk_parsed", None)
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"오류: {e}")
+        if st.button("💾 AI 분석 & 저장", type="primary", use_container_width=True):
+            with st.spinner(f"{len(parsed)}개 분석 중..."):
+                try:
+                    results = ai.lookup_bulk(parsed)
+                    for r in results:
+                        db.save_word(r, "", r.get("tags", []))
+                    st.success(f"{len(results)}개 저장 완료!")
+                    st.session_state.pop("bulk_parsed", None)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"오류: {e}")
