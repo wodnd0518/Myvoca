@@ -350,12 +350,13 @@ with tab_vocab:
 with tab_bulk:
     st.caption("한 줄에 하나씩. 영어+한국어 또는 한국어+영어 순 모두 OK.")
 
+    _bulk_key = st.session_state.get("bulk_key", 0)
     bulk_text = st.text_area(
         "일괄 입력",
         placeholder="Apple cider vinegar  사과식초\n일부러 그런거야  It was intentional\nIt bothers me.  그건 날 귀찮게 해.",
         height=220,
         label_visibility="collapsed",
-        key="bulk_text",
+        key=f"bulk_text_{_bulk_key}",
     )
 
     if st.button("미리보기", use_container_width=True) and bulk_text:
@@ -382,7 +383,7 @@ with tab_bulk:
                         db.save_word(r, "", r.get("tags", []))
                     st.success(f"{len(results)}개 저장 완료!")
                     st.session_state.pop("bulk_parsed", None)
-                    st.session_state["bulk_text"] = ""
+                    st.session_state["bulk_key"] = _bulk_key + 1
                     st.rerun()
                 except Exception as e:
                     st.error(f"오류: {e}")
