@@ -155,18 +155,20 @@ details[data-testid="stExpander"] > summary p {
     margin: 0 !important;
     gap: 8px !important;
 }
-details[data-testid="stExpander"] summary em {
+details[data-testid="stExpander"] summary em,
+details[data-testid="stExpander"] summary p em,
+details[data-testid="stExpander"] summary div em,
+details[data-testid="stExpander"] summary span em {
     font-style: normal !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     font-size: 13px !important;
     color: #6366f1 !important;
-    background: rgba(99,102,241,0.12) !important;
+    background: rgba(99,102,241,0.18) !important;
     border-radius: 6px !important;
     padding: 2px 8px !important;
     white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
     max-width: 40% !important;
+    display: inline-block !important;
 }
 details[data-testid="stExpander"][open] > summary {
     border-radius: 14px 14px 0 0 !important;
