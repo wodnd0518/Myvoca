@@ -5,19 +5,23 @@ import ai
 import db
 
 
+def _strip(s: str) -> str:
+    return s.strip().rstrip(':').strip()
+
+
 def _parse_line(line: str) -> dict | None:
     line = re.sub(r'^[\d\.\-\*\·\•]+\s*', '', line).strip()
     if not line:
         return None
     ko_pos = next((i for i, c in enumerate(line) if '가' <= c <= '힣'), -1)
     if ko_pos == -1:
-        return {"word": line, "hint_ko": ""}
+        return {"word": _strip(line), "hint_ko": ""}
     if ko_pos == 0:
         en_pos = next((i for i, c in enumerate(line) if c.isascii() and c.isalpha()), -1)
         if en_pos == -1:
-            return {"word": line, "hint_ko": ""}
-        return {"word": line[en_pos:].strip(), "hint_ko": line[:en_pos].strip()}
-    return {"word": line[:ko_pos].strip(), "hint_ko": line[ko_pos:].strip()}
+            return {"word": _strip(line), "hint_ko": ""}
+        return {"word": _strip(line[en_pos:]), "hint_ko": _strip(line[:en_pos])}
+    return {"word": _strip(line[:ko_pos]), "hint_ko": _strip(line[ko_pos:])}
 
 
 def parse_bulk_text(text: str) -> list[dict]:
