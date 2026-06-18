@@ -90,12 +90,19 @@ st.markdown("""
 
 /* ── Buttons ── */
 .stButton > button {
-    height: 52px !important;
+    height: 68px !important;
     font-size: 16px !important;
     font-weight: 600 !important;
     border-radius: 14px !important;
     width: 100%;
     transition: all 0.15s ease;
+}
+/* 검색탭: 버튼을 입력창 높이에 맞게 하단 정렬 */
+[data-testid="column"] .stButton {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
 }
 .stButton > button[kind="primary"] {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
@@ -164,14 +171,18 @@ tab_search, tab_vocab, tab_bulk = st.tabs(["🔍 검색", "📚 내 단어장", 
 
 # ── 검색 탭 ──────────────────────────────────────────────────────────────────
 with tab_search:
-    query = st.text_input(
-        "검색",
-        placeholder="한국어도 OK  ·  e.g.  너 지분있다  /  resilient  /  break a leg",
-        label_visibility="collapsed",
-        key="search_input",
-    )
+    col_q, col_btn = st.columns([5, 1])
+    with col_q:
+        query = st.text_input(
+            "검색",
+            placeholder="한국어도 OK  ·  e.g.  너 지분있다  /  resilient  /  break a leg",
+            label_visibility="collapsed",
+            key="search_input",
+        )
+    with col_btn:
+        search_clicked = st.button("검색", type="primary", use_container_width=True)
 
-    if st.button("검색", type="primary", use_container_width=True) and query:
+    if search_clicked and query:
         with st.spinner("AI가 찾는 중..."):
             try:
                 result = ai.lookup_word(query)
