@@ -217,11 +217,7 @@ with tab_search:
 
         st.divider()
 
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.markdown(f"## {r['word']}")
-        with col2:
-            st.caption(r.get("part_of_speech", ""))
+        st.markdown(f"## {r['word']}")
 
         st.markdown(f"{r.get('meaning_ko', '')}")
 
@@ -294,7 +290,7 @@ with tab_vocab:
         for w in words:
             memo = w.get('memo', '') or ''
             memo_preview = ('  *' + memo[:22] + ('…' if len(memo) > 22 else '') + '*') if memo else ''
-            with st.expander(f"**{w['word']}**  {w.get('part_of_speech', '')}{memo_preview}"):
+            with st.expander(f"**{w['word']}**{memo_preview}"):
                 st.markdown(f"{w.get('meaning_ko', '')}")
 
                 if w.get("alternatives"):
