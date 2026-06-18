@@ -4,23 +4,20 @@ import db
 
 st.set_page_config(page_title="나만의 단어장", page_icon="📖", layout="centered")
 
-st.title("📖 나만의 영어 단어장")
-
 tab_search, tab_vocab = st.tabs(["🔍 검색", "📚 내 단어장"])
 
 
 # ── 검색 탭 ──────────────────────────────────────────────────────────────────
 with tab_search:
-    st.subheader("단어 / 표현 검색")
-
     query = st.text_input(
-        "영어 단어나 표현을 입력하세요",
-        placeholder="e.g.  resilient  /  break a leg  /  pull strings",
+        "검색",
+        placeholder="한국어도 OK  ·  e.g.  너 지분있다  /  resilient  /  break a leg",
+        label_visibility="collapsed",
         key="search_input",
     )
 
     if st.button("검색", type="primary", use_container_width=True) and query:
-        with st.spinner("AI가 검색 중..."):
+        with st.spinner("AI가 찾는 중..."):
             try:
                 result = ai.lookup_word(query)
                 st.session_state["last_result"] = result
@@ -31,13 +28,17 @@ with tab_search:
         r = st.session_state["last_result"]
 
         st.divider()
+
         col1, col2 = st.columns([3, 1])
         with col1:
             st.markdown(f"## {r['word']}")
         with col2:
             st.caption(r.get("part_of_speech", ""))
 
-        st.markdown(f"**뜻** &nbsp; {r.get('meaning_ko', '')}")
+        st.markdown(f"{r.get('meaning_ko', '')}")
+
+        if r.get("alternatives"):
+            st.markdown("**다른 표현** &nbsp; " + " · ".join(r["alternatives"]))
 
         if r.get("synonyms"):
             st.markdown("**유사 표현** &nbsp; " + " · ".join(r["synonyms"]))
@@ -52,13 +53,16 @@ with tab_search:
                 st.caption(f"  {ex['ko']}")
 
         st.divider()
-        st.markdown("#### 단어장에 저장")
 
         auto_tags = r.get("tags") or []
         if auto_tags:
-            st.markdown("**자동 태그** &nbsp; " + "  ".join(f"`{t}`" for t in auto_tags))
+            st.caption("자동 태그  " + "  ".join(f"`{t}`" for t in auto_tags))
 
-        memo = st.text_area("메모 (선택)", placeholder="나만의 메모를 남겨보세요", key="memo_input")
+        memo = st.text_area(
+            "메모 (선택)",
+            placeholder="나만의 메모를 남겨보세요",
+            key="memo_input",
+        )
 
         if st.button("💾 저장", type="primary", use_container_width=True):
             try:
@@ -73,17 +77,20 @@ with tab_search:
 
 # ── 단어장 탭 ────────────────────────────────────────────────────────────────
 with tab_vocab:
-    st.subheader("내 단어장")
-
     col_search, col_tag = st.columns([2, 1])
     with col_search:
-        search_text = st.text_input("단어 검색", placeholder="검색할 단어 입력", key="vocab_search")
+        search_text = st.text_input(
+            "단어 검색",
+            placeholder="영어 또는 한국어로 검색",
+            label_visibility="collapsed",
+            key="vocab_search",
+        )
     with col_tag:
         all_tags = db.fetch_all_tags()
-        tag_options = ["전체"] + all_tags
-        selected_tag = st.selectbox("태그 필터", tag_options, key="tag_filter")
+        tag_options = ["전체 태그"] + all_tags
+        selected_tag = st.selectbox("태그 필터", tag_options, label_visibility="collapsed", key="tag_filter")
 
-    filter_tag = "" if selected_tag == "전체" else selected_tag
+    filter_tag = "" if selected_tag == "전체 태그" else selected_tag
 
     try:
         words = db.fetch_words(search=search_text, tag=filter_tag)
@@ -92,13 +99,16 @@ with tab_vocab:
         words = []
 
     if not words:
-        st.info("저장된 단어가 없습니다. 검색 탭에서 단어를 추가해보세요!")
+        st.caption("저장된 단어가 없습니다.")
     else:
         st.caption(f"총 {len(words)}개")
 
         for w in words:
-            with st.expander(f"**{w['word']}** &nbsp; {w.get('part_of_speech', '')}"):
-                st.markdown(f"**뜻** &nbsp; {w.get('meaning_ko', '')}")
+            with st.expander(f"**{w['word']}**  {w.get('part_of_speech', '')}"):
+                st.markdown(f"{w.get('meaning_ko', '')}")
+
+                if w.get("alternatives"):
+                    st.markdown("**다른 표현** &nbsp; " + " · ".join(w["alternatives"]))
 
                 if w.get("synonyms"):
                     st.markdown("**유사 표현** &nbsp; " + " · ".join(w["synonyms"]))
@@ -113,7 +123,7 @@ with tab_vocab:
                         st.caption(f"  {ex['ko']}")
 
                 if w.get("tags"):
-                    st.markdown("**태그** &nbsp; " + "  ".join(f"`{t}`" for t in w["tags"]))
+                    st.caption("태그  " + "  ".join(f"`{t}`" for t in w["tags"]))
 
                 if w.get("memo"):
                     st.markdown(f"**메모** &nbsp; {w['memo']}")
@@ -121,11 +131,9 @@ with tab_vocab:
                 st.caption(f"저장일: {str(w.get('created_at', ''))[:10]}")
 
                 col_edit, col_del = st.columns([1, 1])
-
                 with col_edit:
-                    if st.button("✏️ 메모/태그 수정", key=f"edit_{w['id']}"):
+                    if st.button("✏️ 메모 수정", key=f"edit_{w['id']}"):
                         st.session_state[f"editing_{w['id']}"] = True
-
                 with col_del:
                     if st.button("🗑️ 삭제", key=f"del_{w['id']}"):
                         db.delete_word(w["id"])

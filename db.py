@@ -28,7 +28,7 @@ def fetch_words(search: str = "", tag: str = "") -> list[dict]:
     query = client.table("vocabulary").select("*").order("created_at", desc=True)
 
     if search:
-        query = query.ilike("word", f"%{search}%")
+        query = query.or_(f"word.ilike.%{search}%,meaning_ko.ilike.%{search}%")
     if tag:
         query = query.contains("tags", [tag])
 
