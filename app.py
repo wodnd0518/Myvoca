@@ -4,6 +4,13 @@ import db
 
 st.set_page_config(page_title="나만의 단어장", page_icon="📖", layout="centered")
 
+st.markdown("""
+<style>
+#MainMenu, header, footer {visibility: hidden;}
+.block-container {padding-top: 0.5rem !important;}
+</style>
+""", unsafe_allow_html=True)
+
 tab_search, tab_vocab = st.tabs(["🔍 검색", "📚 내 단어장"])
 
 
@@ -41,7 +48,7 @@ with tab_search:
             st.markdown("**다른 표현** &nbsp; " + " · ".join(r["alternatives"]))
 
         if r.get("synonyms"):
-            st.markdown("**유사 표현** &nbsp; " + " · ".join(r["synonyms"]))
+            st.markdown("**관련 영어 표현** &nbsp; " + " · ".join(r["synonyms"]))
 
         if r.get("context"):
             st.info(r["context"])
