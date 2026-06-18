@@ -157,9 +157,9 @@ details[data-testid="stExpander"] > summary p {
 }
 details[data-testid="stExpander"] > summary p em {
     font-style: normal !important;
-    font-weight: 400 !important;
+    font-weight: 500 !important;
     font-size: 13px !important;
-    color: rgba(128,128,128,0.75) !important;
+    color: #6366f1 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
