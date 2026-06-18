@@ -146,6 +146,25 @@ details[data-testid="stExpander"] > summary {
     border: 1.5px solid rgba(128,128,128,0.15) !important;
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
+/* 메모 미리보기 – summary p 내 italic(em) 요소를 오른쪽 끝으로 */
+details[data-testid="stExpander"] > summary p {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin: 0 !important;
+    gap: 8px !important;
+}
+details[data-testid="stExpander"] > summary p em {
+    font-style: normal !important;
+    font-weight: 400 !important;
+    font-size: 13px !important;
+    color: rgba(128,128,128,0.75) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 40% !important;
+}
 details[data-testid="stExpander"][open] > summary {
     border-radius: 14px 14px 0 0 !important;
     border-bottom: none !important;
@@ -273,7 +292,9 @@ with tab_vocab:
         st.caption(f"총 {len(words)}개")
 
         for w in words:
-            with st.expander(f"**{w['word']}**  {w.get('part_of_speech', '')}"):
+            memo = w.get('memo', '') or ''
+            memo_preview = ('  *' + memo[:22] + ('…' if len(memo) > 22 else '') + '*') if memo else ''
+            with st.expander(f"**{w['word']}**  {w.get('part_of_speech', '')}{memo_preview}"):
                 st.markdown(f"{w.get('meaning_ko', '')}")
 
                 if w.get("alternatives"):
