@@ -16,7 +16,9 @@ def _parse_line(line: str) -> dict | None:
     ko_pos = next((i for i, c in enumerate(line) if '가' <= c <= '힣'), -1)
     if ko_pos == -1:
         return {"word": _strip(line), "hint_ko": ""}
-    if ko_pos == 0:
+    # ko_pos 앞에 실제 알파벳이 없으면 (괄호·구두점만 있으면) 한국어가 먼저인 것으로 처리
+    korean_first = ko_pos == 0 or not any(c.isascii() and c.isalpha() for c in line[:ko_pos])
+    if korean_first:
         en_pos = next((i for i, c in enumerate(line) if c.isascii() and c.isalpha()), -1)
         if en_pos == -1:
             return {"word": _strip(line), "hint_ko": ""}
