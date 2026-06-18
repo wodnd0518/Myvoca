@@ -380,7 +380,7 @@ with tab_bulk:
                         db.save_word(r, "", r.get("tags", []))
                     st.success(f"{len(results)}개 저장 완료!")
                     st.session_state.pop("bulk_parsed", None)
-                    st.session_state.pop("bulk_text", None)
+                    st.session_state["bulk_text"] = ""
                     st.rerun()
                 except Exception as e:
                     st.error(f"오류: {e}")
