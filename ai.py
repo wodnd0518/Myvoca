@@ -1,4 +1,7 @@
 import json
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
+
 import streamlit as st
 from openai import OpenAI
 
@@ -29,6 +32,63 @@ Rules:
 - English input → "word": given expression, "alternatives": []
 - "synonyms": English only, 2~3 related expressions
 - "tags": 3~5 Korean tags, 1~4 chars, from: 비즈니스,일상,감정,관계,학문,여행,성격,자연,의학,법률,기술,스포츠,문화,숙어,구동사,형용사,동사,명사"""
+
+
+BULK_SYSTEM_PROMPT = """Respond ONLY with this JSON. No text outside it.
+Input is a JSON array of {"word": "English expression", "hint_ko": "Korean meaning"}.
+Return analysis for ALL entries in the SAME ORDER.
+{
+  "results": [
+    {
+      "word": "...",
+      "alternatives": [],
+      "part_of_speech": "품사",
+      "meaning_ko": "hint_ko 값 그대로 사용",
+      "examples": [
+        {"en": "...", "ko": "..."},
+        {"en": "...", "ko": "..."},
+        {"en": "...", "ko": "..."},
+        {"en": "...", "ko": "..."},
+        {"en": "...", "ko": "..."}
+      ],
+      "synonyms": ["related English 1", "related English 2"],
+      "context": "사용 상황·뉘앙스 (한국어, 1~2문장)",
+      "tags": ["태그1", "태그2", "태그3"]
+    }
+  ]
+}
+Rules:
+- meaning_ko: hint_ko가 있으면 그대로 사용, 없으면 직접 생성
+- synonyms: English only, 2~3 expressions
+- tags: 3~5 Korean tags, 1~4 chars, from: 비즈니스,일상,감정,관계,학문,여행,성격,자연,의학,법률,기술,스포츠,문화,숙어,구동사,형용사,동사,명사"""
+
+
+def _call_chunk(client: OpenAI, chunk: list[dict]) -> list[dict]:
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": BULK_SYSTEM_PROMPT},
+            {"role": "user", "content": json.dumps(chunk, ensure_ascii=False)},
+        ],
+        response_format={"type": "json_object"},
+        temperature=0.3,
+    )
+    data = json.loads(response.choices[0].message.content)
+    return data.get("results", [])
+
+
+def lookup_bulk(entries: list[dict]) -> list[dict]:
+    client = get_client()
+    chunks = [entries[i:i + 10] for i in range(0, len(entries), 10)]
+
+    if len(chunks) == 1:
+        return _call_chunk(client, chunks[0])
+
+    call = partial(_call_chunk, client)
+    with ThreadPoolExecutor(max_workers=min(len(chunks), 5)) as executor:
+        chunk_results = list(executor.map(call, chunks))
+
+    return [r for results in chunk_results for r in results]
 
 
 def lookup_word(word: str) -> dict:

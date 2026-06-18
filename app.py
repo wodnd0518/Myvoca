@@ -1,6 +1,27 @@
+import re
+
 import streamlit as st
 import ai
 import db
+
+
+def _parse_line(line: str) -> dict | None:
+    line = re.sub(r'^[\d\.\-\*\·\•]+\s*', '', line).strip()
+    if not line:
+        return None
+    ko_pos = next((i for i, c in enumerate(line) if '가' <= c <= '힣'), -1)
+    if ko_pos == -1:
+        return {"word": line, "hint_ko": ""}
+    if ko_pos == 0:
+        en_pos = next((i for i, c in enumerate(line) if c.isascii() and c.isalpha()), -1)
+        if en_pos == -1:
+            return {"word": line, "hint_ko": ""}
+        return {"word": line[en_pos:].strip(), "hint_ko": line[:en_pos].strip()}
+    return {"word": line[:ko_pos].strip(), "hint_ko": line[ko_pos:].strip()}
+
+
+def parse_bulk_text(text: str) -> list[dict]:
+    return [e for line in text.splitlines() if (e := _parse_line(line)) and e["word"]]
 
 st.set_page_config(page_title="나만의 단어장", page_icon="📖", layout="centered")
 
@@ -11,7 +32,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-tab_search, tab_vocab = st.tabs(["🔍 검색", "📚 내 단어장"])
+tab_search, tab_vocab, tab_bulk = st.tabs(["🔍 검색", "📚 내 단어장", "📋 일괄 입력"])
 
 
 # ── 검색 탭 ──────────────────────────────────────────────────────────────────
@@ -162,3 +183,44 @@ with tab_vocab:
                         db.update_memo_tags(w["id"], new_memo, updated_tags)
                         st.session_state.pop(f"editing_{w['id']}", None)
                         st.rerun()
+
+
+# ── 일괄 입력 탭 ──────────────────────────────────────────────────────────────
+with tab_bulk:
+    st.caption("한 줄에 하나씩. 영어+한국어 또는 한국어+영어 순 모두 OK.")
+
+    bulk_text = st.text_area(
+        "일괄 입력",
+        placeholder="Apple cider vinegar  사과식초\n일부러 그런거야  It was intentional\nIt bothers me.  그건 날 귀찮게 해.",
+        height=220,
+        label_visibility="collapsed",
+        key="bulk_text",
+    )
+
+    if st.button("미리보기", use_container_width=True) and bulk_text:
+        parsed = parse_bulk_text(bulk_text)
+        if parsed:
+            st.session_state["bulk_parsed"] = parsed
+        else:
+            st.warning("파싱된 항목이 없습니다. 형식을 확인해주세요.")
+
+    if "bulk_parsed" in st.session_state:
+        parsed = st.session_state["bulk_parsed"]
+        st.caption(f"{len(parsed)}개 감지됨")
+        st.dataframe(
+            [{"영어 표현": e["word"], "한국어 힌트": e["hint_ko"]} for e in parsed],
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        if st.button("💾 AI 분석 & 저장", type="primary", use_container_width=True):
+            with st.spinner(f"{len(parsed)}개 분석 중..."):
+                try:
+                    results = ai.lookup_bulk(parsed)
+                    for r in results:
+                        db.save_word(r, "", r.get("tags", []))
+                    st.success(f"{len(results)}개 저장 완료!")
+                    st.session_state.pop("bulk_parsed", None)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"오류: {e}")
