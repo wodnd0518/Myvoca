@@ -16,7 +16,6 @@ def _parse_line(line: str) -> dict | None:
     ko_pos = next((i for i, c in enumerate(line) if '가' <= c <= '힣'), -1)
     if ko_pos == -1:
         return {"word": _strip(line), "hint_ko": ""}
-    # ko_pos 앞에 실제 알파벳이 없으면 (괄호·구두점만 있으면) 한국어가 먼저인 것으로 처리
     korean_first = ko_pos == 0 or not any(c.isascii() and c.isalpha() for c in line[:ko_pos])
     if korean_first:
         en_pos = next((i for i, c in enumerate(line) if c.isascii() and c.isalpha()), -1)
@@ -28,6 +27,22 @@ def _parse_line(line: str) -> dict | None:
 
 def parse_bulk_text(text: str) -> list[dict]:
     return [e for line in text.splitlines() if (e := _parse_line(line)) and e["word"]]
+
+
+def _render_word_body(data: dict) -> None:
+    st.markdown(data.get("meaning_ko", ""))
+    if data.get("alternatives"):
+        st.markdown("**다른 표현** &nbsp; " + " · ".join(data["alternatives"]))
+    if data.get("synonyms"):
+        st.markdown("**유사 표현** &nbsp; " + " · ".join(data["synonyms"]))
+    if data.get("context"):
+        st.info(data["context"])
+    if data.get("examples"):
+        st.markdown("**예문**")
+        for ex in data["examples"]:
+            st.markdown(f"- {ex['en']}")
+            st.caption(f"  {ex['ko']}")
+
 
 st.set_page_config(page_title="나만의 단어장", page_icon="📖", layout="centered")
 
@@ -133,15 +148,6 @@ st.markdown("""
     color: #6366f1 !important;
 }
 
-/* ── Selectbox ── */
-.stSelectbox [data-baseweb="select"] > div {
-    border-radius: 14px !important;
-    min-height: 54px !important;
-    border: 2px solid rgba(128,128,128,0.2) !important;
-    font-size: 15px !important;
-    background: var(--secondary-background-color) !important;
-}
-
 /* ── Expander (단어 카드) ── */
 details[data-testid="stExpander"] > summary {
     font-size: 16px !important;
@@ -229,23 +235,7 @@ with tab_search:
         st.divider()
 
         st.markdown(f"## {r['word']}")
-
-        st.markdown(f"{r.get('meaning_ko', '')}")
-
-        if r.get("alternatives"):
-            st.markdown("**다른 표현** &nbsp; " + " · ".join(r["alternatives"]))
-
-        if r.get("synonyms"):
-            st.markdown("**관련 영어 표현** &nbsp; " + " · ".join(r["synonyms"]))
-
-        if r.get("context"):
-            st.info(r["context"])
-
-        if r.get("examples"):
-            st.markdown("**예문**")
-            for ex in r["examples"]:
-                st.markdown(f"- {ex['en']}")
-                st.caption(f"  {ex['ko']}")
+        _render_word_body(r)
 
         st.divider()
 
@@ -294,22 +284,7 @@ with tab_vocab:
             memo = w.get('memo', '') or ''
             memo_preview = ('  *' + memo[:22] + ('…' if len(memo) > 22 else '') + '*') if memo else ''
             with st.expander(f"**{w['word']}**{memo_preview}"):
-                st.markdown(f"{w.get('meaning_ko', '')}")
-
-                if w.get("alternatives"):
-                    st.markdown("**다른 표현** &nbsp; " + " · ".join(w["alternatives"]))
-
-                if w.get("synonyms"):
-                    st.markdown("**유사 표현** &nbsp; " + " · ".join(w["synonyms"]))
-
-                if w.get("context"):
-                    st.info(w["context"])
-
-                if w.get("examples"):
-                    st.markdown("**예문**")
-                    for ex in w["examples"]:
-                        st.markdown(f"- {ex['en']}")
-                        st.caption(f"  {ex['ko']}")
+                _render_word_body(w)
 
                 if w.get("tags"):
                     st.caption("태그  " + "  ".join(f"`{t}`" for t in w["tags"]))

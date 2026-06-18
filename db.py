@@ -15,6 +15,7 @@ def save_word(word_data: dict, memo: str, tags: list[str]) -> None:
         "word": word_data["word"],
         "part_of_speech": word_data.get("part_of_speech", ""),
         "meaning_ko": word_data.get("meaning_ko", ""),
+        "alternatives": word_data.get("alternatives", []),
         "examples": word_data.get("examples", []),
         "synonyms": word_data.get("synonyms", []),
         "context": word_data.get("context", ""),
@@ -36,16 +37,6 @@ def fetch_words(search: str = "") -> list[dict]:
             or any(s in t.lower() for t in (r.get("tags") or []))
         ]
     return data
-
-
-def fetch_all_tags() -> list[str]:
-    client = get_client()
-    result = client.table("vocabulary").select("tags").execute()
-    tag_set = set()
-    for row in result.data:
-        if row.get("tags"):
-            tag_set.update(row["tags"])
-    return sorted(tag_set)
 
 
 def delete_word(word_id: int) -> None:
