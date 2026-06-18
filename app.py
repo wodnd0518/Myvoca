@@ -155,11 +155,14 @@ details[data-testid="stExpander"] > summary p {
     margin: 0 !important;
     gap: 8px !important;
 }
-details[data-testid="stExpander"] > summary p em {
+details[data-testid="stExpander"] summary em {
     font-style: normal !important;
     font-weight: 500 !important;
     font-size: 13px !important;
     color: #6366f1 !important;
+    background: rgba(99,102,241,0.12) !important;
+    border-radius: 6px !important;
+    padding: 2px 8px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
