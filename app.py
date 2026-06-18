@@ -60,19 +60,22 @@ st.markdown("""
 .stTabs [data-baseweb="tab-border"] { display: none; }
 
 /* ── Text Input ── */
-.stTextInput input {
-    font-size: 16px !important;
+.stTextInput [data-baseweb="input"] {
     height: 68px !important;
-    padding: 0 18px !important;
     border-radius: 14px !important;
     border: 2px solid rgba(128,128,128,0.2) !important;
     background: var(--secondary-background-color) !important;
-    color: var(--text-color) !important;
     transition: all 0.2s;
 }
-.stTextInput input:focus {
+.stTextInput [data-baseweb="input"]:focus-within {
     border-color: #6366f1 !important;
     box-shadow: 0 0 0 4px rgba(99,102,241,0.12) !important;
+}
+.stTextInput [data-baseweb="input"] input {
+    font-size: 16px !important;
+    padding: 0 18px !important;
+    background: transparent !important;
+    color: var(--text-color) !important;
 }
 
 /* ── Text Area ── */
