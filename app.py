@@ -61,8 +61,8 @@ st.markdown("""
 
 /* ── Text Input ── */
 .stTextInput input {
-    font-size: 18px !important;
-    height: 54px !important;
+    font-size: 16px !important;
+    height: 68px !important;
     padding: 0 18px !important;
     border-radius: 14px !important;
     border: 2px solid rgba(128,128,128,0.2) !important;
