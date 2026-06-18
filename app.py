@@ -270,23 +270,15 @@ with tab_search:
 
 # ── 단어장 탭 ────────────────────────────────────────────────────────────────
 with tab_vocab:
-    col_search, col_tag = st.columns([2, 1])
-    with col_search:
-        search_text = st.text_input(
-            "단어 검색",
-            placeholder="영어 또는 한국어로 검색",
-            label_visibility="collapsed",
-            key="vocab_search",
-        )
-    with col_tag:
-        all_tags = db.fetch_all_tags()
-        tag_options = ["전체 태그"] + all_tags
-        selected_tag = st.selectbox("태그 필터", tag_options, label_visibility="collapsed", key="tag_filter")
-
-    filter_tag = "" if selected_tag == "전체 태그" else selected_tag
+    search_text = st.text_input(
+        "단어 검색",
+        placeholder="영어·한국어·태그로 검색",
+        label_visibility="collapsed",
+        key="vocab_search",
+    )
 
     try:
-        words = db.fetch_words(search=search_text, tag=filter_tag)
+        words = db.fetch_words(search=search_text)
     except Exception as e:
         st.error(f"불러오기 실패: {e}")
         words = []
@@ -388,6 +380,7 @@ with tab_bulk:
                         db.save_word(r, "", r.get("tags", []))
                     st.success(f"{len(results)}개 저장 완료!")
                     st.session_state.pop("bulk_parsed", None)
+                    st.session_state.pop("bulk_text", None)
                     st.rerun()
                 except Exception as e:
                     st.error(f"오류: {e}")

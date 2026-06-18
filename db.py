@@ -23,17 +23,19 @@ def save_word(word_data: dict, memo: str, tags: list[str]) -> None:
     }).execute()
 
 
-def fetch_words(search: str = "", tag: str = "") -> list[dict]:
+def fetch_words(search: str = "") -> list[dict]:
     client = get_client()
-    query = client.table("vocabulary").select("*").order("created_at", desc=True)
-
+    result = client.table("vocabulary").select("*").order("created_at", desc=True).execute()
+    data = result.data
     if search:
-        query = query.or_(f"word.ilike.%{search}%,meaning_ko.ilike.%{search}%")
-    if tag:
-        query = query.contains("tags", [tag])
-
-    result = query.execute()
-    return result.data
+        s = search.lower()
+        data = [
+            r for r in data
+            if s in (r.get("word") or "").lower()
+            or s in (r.get("meaning_ko") or "").lower()
+            or any(s in t.lower() for t in (r.get("tags") or []))
+        ]
+    return data
 
 
 def fetch_all_tags() -> list[str]:
