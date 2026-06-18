@@ -210,13 +210,14 @@ tab_search, tab_vocab, tab_bulk = st.tabs(["🔍 검색", "📚 내 단어장", 
 
 # ── 검색 탭 ──────────────────────────────────────────────────────────────────
 with tab_search:
+    _search_key = st.session_state.get("search_key", 0)
     col_q, col_btn = st.columns([5, 1])
     with col_q:
         query = st.text_input(
             "검색",
             placeholder="한국어도 OK  ·  e.g.  너 지분있다  /  resilient  /  break a leg",
             label_visibility="collapsed",
-            key="search_input",
+            key=f"search_input_{_search_key}",
         )
     with col_btn:
         search_clicked = st.button("검색", type="primary", use_container_width=True)
@@ -255,6 +256,7 @@ with tab_search:
                 st.success(f"**{r['word']}** 저장 완료!")
                 st.session_state.pop("last_result")
                 st.session_state.pop("memo_input", None)
+                st.session_state["search_key"] = _search_key + 1
                 st.rerun()
             except Exception as e:
                 st.error(f"저장 실패: {e}")
