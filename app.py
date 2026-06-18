@@ -27,8 +27,134 @@ st.set_page_config(page_title="나만의 단어장", page_icon="📖", layout="c
 
 st.markdown("""
 <style>
-#MainMenu, header, footer {visibility: hidden;}
-.block-container {padding-top: 0.5rem !important;}
+#MainMenu, header, footer { visibility: hidden; }
+.block-container {
+    padding-top: 0.75rem !important;
+    padding-bottom: 2rem !important;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+/* ── Tabs ── */
+.stTabs [data-baseweb="tab-list"] {
+    background: #f0f2f8;
+    border-radius: 14px;
+    padding: 4px;
+    gap: 2px;
+}
+.stTabs [data-baseweb="tab"] {
+    border-radius: 10px;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    padding: 11px 20px !important;
+    color: #6b7280;
+}
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: white !important;
+    color: #4f46e5 !important;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+}
+.stTabs [data-baseweb="tab-highlight"],
+.stTabs [data-baseweb="tab-border"] { display: none; }
+
+/* ── Text Input ── */
+.stTextInput input {
+    font-size: 18px !important;
+    height: 54px !important;
+    padding: 0 18px !important;
+    border-radius: 14px !important;
+    border: 2px solid #e5e7eb !important;
+    background: #fafafa !important;
+    transition: all 0.2s;
+}
+.stTextInput input:focus {
+    border-color: #6366f1 !important;
+    background: white !important;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.08) !important;
+}
+
+/* ── Text Area ── */
+.stTextArea textarea {
+    font-size: 16px !important;
+    border-radius: 14px !important;
+    border: 2px solid #e5e7eb !important;
+    background: #fafafa !important;
+}
+.stTextArea textarea:focus {
+    border-color: #6366f1 !important;
+    background: white !important;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.08) !important;
+}
+
+/* ── Buttons ── */
+.stButton > button {
+    height: 52px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 14px !important;
+    width: 100%;
+    transition: all 0.15s ease;
+}
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 4px 14px rgba(99,102,241,0.3) !important;
+}
+.stButton > button[kind="primary"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(99,102,241,0.45) !important;
+}
+.stButton > button[kind="secondary"] {
+    border: 2px solid #e5e7eb !important;
+    background: white !important;
+    color: #374151 !important;
+}
+.stButton > button[kind="secondary"]:hover {
+    border-color: #6366f1 !important;
+    color: #6366f1 !important;
+    background: #fafaff !important;
+}
+
+/* ── Selectbox ── */
+.stSelectbox [data-baseweb="select"] > div {
+    border-radius: 14px !important;
+    min-height: 54px !important;
+    border: 2px solid #e5e7eb !important;
+    font-size: 15px !important;
+    background: #fafafa !important;
+}
+
+/* ── Expander (단어 카드) ── */
+details[data-testid="stExpander"] > summary {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    padding: 14px 18px !important;
+    border-radius: 14px !important;
+    background: white !important;
+    border: 1.5px solid #e5e7eb !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+details[data-testid="stExpander"][open] > summary {
+    border-radius: 14px 14px 0 0 !important;
+    border-bottom: none !important;
+}
+details[data-testid="stExpander"] > div:last-child {
+    border: 1.5px solid #e5e7eb !important;
+    border-top: none !important;
+    border-radius: 0 0 14px 14px !important;
+    background: #fafafa !important;
+    padding: 14px 18px !important;
+}
+
+/* ── Alert / Info ── */
+[data-testid="stAlert"] {
+    border-radius: 12px !important;
+    font-size: 15px !important;
+}
+
+/* ── Divider ── */
+hr { border-color: #f0f0f0 !important; margin: 1rem 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
