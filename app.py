@@ -267,13 +267,14 @@ with tab_search:
     st.markdown("##### 🤔 영어 선생님에게 물어보기")
     st.caption("단어 차이, 뉘앙스, 사용법 등 영어에 관한 건 뭐든 물어보세요!")
 
+    _qa_key = st.session_state.get("qa_key", 0)
     col_qa, col_qa_btn = st.columns([5, 1])
     with col_qa:
         qa_query = st.text_input(
             "질문",
             placeholder="e.g. attorney와 lawyer의 차이가 뭐야?",
             label_visibility="collapsed",
-            key="qa_input",
+            key=f"qa_input_{_qa_key}",
         )
     with col_qa_btn:
         qa_clicked = st.button("질문", type="primary", use_container_width=True, key="qa_btn")
@@ -291,6 +292,10 @@ with tab_search:
         qa = st.session_state["last_qa"]
         st.markdown(f"**Q. {qa['question']}**")
         st.markdown(qa["answer"])
+        if st.button("확인", use_container_width=True):
+            st.session_state.pop("last_qa")
+            st.session_state["qa_key"] = _qa_key + 1
+            st.rerun()
 
 
 # ── 단어장 탭 ────────────────────────────────────────────────────────────────
