@@ -288,9 +288,9 @@ with tab_vocab:
             memo = w.get('memo', '') or ''
             memo_preview = ('  *' + memo[:22] + ('…' if len(memo) > 22 else '') + '*') if memo else ''
             with st.expander(f"**{w['word']}**{memo_preview}"):
-                copy_text = json.dumps(f"{w['word']}\n{w.get('meaning_ko', '')}")
+                copy_val = json.dumps(f"{w['word']}\n{w.get('meaning_ko', '')}")
                 components.html(
-                    f"""<button onclick="var e=document.createElement('textarea');e.value={copy_text};document.body.appendChild(e);e.select();document.execCommand('copy');document.body.removeChild(e);this.textContent='✅ 복사됨';setTimeout(()=>this.textContent='📋 복사',1500);" style="cursor:pointer;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(99,102,241,0.3);background:rgba(99,102,241,0.08);color:#6366f1;font-size:13px;font-weight:600;font-family:inherit;">📋 복사</button>""",
+                    f"""<script>var _t={copy_val};</script><button onclick="var e=document.createElement('textarea');e.value=_t;document.body.appendChild(e);e.select();document.execCommand('copy');document.body.removeChild(e);this.textContent='✅ 복사됨';setTimeout(()=>this.textContent='📋 복사',1500);" style="cursor:pointer;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(99,102,241,0.3);background:rgba(99,102,241,0.08);color:#6366f1;font-size:13px;font-weight:600;font-family:inherit;">📋 복사</button>""",
                     height=40,
                 )
                 _render_word_body(w)
