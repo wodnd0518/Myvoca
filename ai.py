@@ -19,8 +19,6 @@ SYSTEM_PROMPT = """Respond ONLY with this JSON. No text outside it.
   "examples": [
     {"en": "...", "ko": "..."},
     {"en": "...", "ko": "..."},
-    {"en": "...", "ko": "..."},
-    {"en": "...", "ko": "..."},
     {"en": "...", "ko": "..."}
   ],
   "synonyms": ["related English expression 1", "related English expression 2", "related English expression 3"],
@@ -45,8 +43,6 @@ Return analysis for ALL entries in the SAME ORDER.
       "part_of_speech": "품사",
       "meaning_ko": "hint_ko 값 그대로 사용",
       "examples": [
-        {"en": "...", "ko": "..."},
-        {"en": "...", "ko": "..."},
         {"en": "...", "ko": "..."},
         {"en": "...", "ko": "..."},
         {"en": "...", "ko": "..."}
