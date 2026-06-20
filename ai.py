@@ -99,3 +99,27 @@ def lookup_word(word: str) -> dict:
         temperature=0.3,
     )
     return json.loads(response.choices[0].message.content)
+
+
+QA_SYSTEM_PROMPT = """You are a warm, concise English teacher for Korean learners.
+Answer questions about English: word differences, nuances, usage, grammar, idioms.
+Rules:
+- Answer in Korean; include English examples with Korean translations in parentheses
+- Lead with the core point (1-2 sentences), then support with examples or bullet points
+- For A vs B questions: clearly show when to use each with a short example
+- Keep total response under 200 words
+- Use **bold** for key terms, - for bullet lists
+- Tone: friendly and encouraging, like a helpful personal teacher"""
+
+
+def ask_question(question: str) -> str:
+    client = get_client()
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": QA_SYSTEM_PROMPT},
+            {"role": "user", "content": question.strip()},
+        ],
+        temperature=0.5,
+    )
+    return response.choices[0].message.content

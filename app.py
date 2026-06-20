@@ -207,7 +207,7 @@ hr { border-color: rgba(128,128,128,0.15) !important; margin: 1rem 0 !important;
 </style>
 """, unsafe_allow_html=True)
 
-tab_search, tab_vocab, tab_bulk = st.tabs(["🔍 검색", "📚 내 단어장", "📋 일괄 입력"])
+tab_search, tab_vocab, tab_qa, tab_bulk = st.tabs(["🔍 검색", "📚 내 단어장", "💬 Q&A", "📋 일괄 입력"])
 
 
 # ── 검색 탭 ──────────────────────────────────────────────────────────────────
@@ -262,6 +262,35 @@ with tab_search:
                 st.rerun()
             except Exception as e:
                 st.error(f"저장 실패: {e}")
+
+    st.divider()
+    st.markdown("##### 🤔 영어 선생님에게 물어보기")
+    st.caption("단어 차이, 뉘앙스, 사용법 등 영어에 관한 건 뭐든 물어보세요!")
+
+    col_qa, col_qa_btn = st.columns([5, 1])
+    with col_qa:
+        qa_query = st.text_input(
+            "질문",
+            placeholder="e.g. attorney와 lawyer의 차이가 뭐야?",
+            label_visibility="collapsed",
+            key="qa_input",
+        )
+    with col_qa_btn:
+        qa_clicked = st.button("질문", type="primary", use_container_width=True, key="qa_btn")
+
+    if qa_clicked and qa_query:
+        with st.spinner("선생님이 답변 중..."):
+            try:
+                answer = ai.ask_question(qa_query)
+                db.save_qa(qa_query, answer)
+                st.session_state["last_qa"] = {"question": qa_query, "answer": answer}
+            except Exception as e:
+                st.error(f"오류: {e}")
+
+    if "last_qa" in st.session_state:
+        qa = st.session_state["last_qa"]
+        st.markdown(f"**Q. {qa['question']}**")
+        st.markdown(qa["answer"])
 
 
 # ── 단어장 탭 ────────────────────────────────────────────────────────────────
@@ -328,6 +357,24 @@ with tab_vocab:
                         db.update_memo_tags(w["id"], new_memo, updated_tags)
                         st.session_state.pop(f"editing_{w['id']}", None)
                         st.rerun()
+
+
+# ── Q&A 탭 ──────────────────────────────────────────────────────────────────
+with tab_qa:
+    try:
+        qa_list = db.fetch_qa()
+    except Exception as e:
+        st.error(f"불러오기 실패: {e}")
+        qa_list = []
+
+    if not qa_list:
+        st.caption("아직 질문한 내용이 없습니다.")
+    else:
+        st.caption(f"총 {len(qa_list)}개")
+        for qa in qa_list:
+            with st.expander(f"**Q. {qa['question']}**"):
+                st.markdown(qa["answer"])
+                st.caption(f"질문일: {str(qa.get('created_at', ''))[:10]}")
 
 
 # ── 일괄 입력 탭 ──────────────────────────────────────────────────────────────

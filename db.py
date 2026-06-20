@@ -50,3 +50,17 @@ def update_memo_tags(word_id: int, memo: str, tags: list[str]) -> None:
         "memo": memo,
         "tags": tags,
     }).eq("id", word_id).execute()
+
+
+def save_qa(question: str, answer: str) -> None:
+    client = get_client()
+    client.table("qa_history").insert({
+        "question": question,
+        "answer": answer,
+    }).execute()
+
+
+def fetch_qa() -> list[dict]:
+    client = get_client()
+    result = client.table("qa_history").select("*").order("created_at", desc=True).execute()
+    return result.data
