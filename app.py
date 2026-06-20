@@ -116,12 +116,11 @@ st.markdown("""
 
 /* ── Buttons ── */
 .stButton > button {
+    height: 68px !important;
     font-size: 16px !important;
     font-weight: 600 !important;
     border-radius: 14px !important;
     width: 100%;
-    min-height: 52px;
-    padding: 12px 18px !important;
     transition: all 0.15s ease;
 }
 /* 검색탭: 버튼을 입력창 높이에 맞게 하단 정렬 */
@@ -132,7 +131,6 @@ st.markdown("""
     height: 100%;
 }
 .stButton > button[kind="primary"] {
-    height: 68px !important;
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
     border: none !important;
     color: white !important;
@@ -150,6 +148,52 @@ st.markdown("""
 .stButton > button[kind="secondary"]:hover {
     border-color: #6366f1 !important;
     color: #6366f1 !important;
+}
+
+/* ── Expander (단어 카드) ── */
+details[data-testid="stExpander"] > summary {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    padding: 14px 18px !important;
+    border-radius: 14px !important;
+    background: var(--secondary-background-color) !important;
+    border: 1.5px solid rgba(128,128,128,0.15) !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+/* 메모 미리보기 – summary p 내 italic(em) 요소를 오른쪽 끝으로 */
+details[data-testid="stExpander"] > summary p {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin: 0 !important;
+    gap: 8px !important;
+}
+details[data-testid="stExpander"] summary em,
+details[data-testid="stExpander"] summary p em,
+details[data-testid="stExpander"] summary div em,
+details[data-testid="stExpander"] summary span em {
+    font-style: normal !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    color: #6366f1 !important;
+    background: rgba(99,102,241,0.18) !important;
+    border-radius: 6px !important;
+    padding: 2px 8px !important;
+    white-space: nowrap !important;
+    max-width: 40% !important;
+    display: inline-block !important;
+}
+details[data-testid="stExpander"][open] > summary {
+    border-radius: 14px 14px 0 0 !important;
+    border-bottom: none !important;
+}
+details[data-testid="stExpander"] > div:last-child {
+    border: 1.5px solid rgba(128,128,128,0.15) !important;
+    border-top: none !important;
+    border-radius: 0 0 14px 14px !important;
+    background: var(--background-color) !important;
+    padding: 14px 18px !important;
 }
 
 /* ── Alert / Info ── */
@@ -239,64 +283,51 @@ with tab_vocab:
         st.caption("저장된 단어가 없습니다.")
     else:
         st.caption(f"총 {len(words)}개")
-        active_id = st.session_state.get("active_word_id")
 
         for w in words:
             memo = w.get('memo', '') or ''
-            memo_preview = ('   *' + memo[:20] + ('…' if len(memo) > 20 else '') + '*') if memo else ''
-            is_open = active_id == w['id']
+            memo_preview = ('  *' + memo[:22] + ('…' if len(memo) > 22 else '') + '*') if memo else ''
+            with st.expander(f"**{w['word']}**{memo_preview}"):
+                copy_val = json.dumps(f"{w['word']}\n{w.get('meaning_ko', '')}")
+                components.html(
+                    f"""<script>var _t={copy_val};</script><button onclick="var e=document.createElement('textarea');e.value=_t;document.body.appendChild(e);e.select();document.execCommand('copy');document.body.removeChild(e);this.textContent='✅ 복사됨';setTimeout(()=>this.textContent='📋 복사',1500);" style="cursor:pointer;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(99,102,241,0.3);background:rgba(99,102,241,0.08);color:#6366f1;font-size:13px;font-weight:600;font-family:inherit;">📋 복사</button>""",
+                    height=40,
+                )
+                _render_word_body(w)
 
-            if st.button(
-                f"{'▾' if is_open else '▸'}  **{w['word']}**{memo_preview}",
-                key=f"card_{w['id']}",
-                use_container_width=True,
-            ):
-                st.session_state["active_word_id"] = None if is_open else w['id']
-                st.rerun()
+                if w.get("tags"):
+                    st.caption("태그  " + "  ".join(f"`{t}`" for t in w["tags"]))
 
-            if is_open:
-                with st.container(border=True):
-                    copy_val = json.dumps(f"{w['word']}\n{w.get('meaning_ko', '')}")
-                    components.html(
-                        f"""<script>var _t={copy_val};</script><button onclick="var e=document.createElement('textarea');e.value=_t;document.body.appendChild(e);e.select();document.execCommand('copy');document.body.removeChild(e);this.textContent='✅ 복사됨';setTimeout(()=>this.textContent='📋 복사',1500);" style="cursor:pointer;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(99,102,241,0.3);background:rgba(99,102,241,0.08);color:#6366f1;font-size:13px;font-weight:600;font-family:inherit;">📋 복사</button>""",
-                        height=40,
+                if w.get("memo"):
+                    st.markdown(f"**메모** &nbsp; {w['memo']}")
+
+                st.caption(f"저장일: {str(w.get('created_at', ''))[:10]}")
+
+                col_edit, col_del = st.columns([1, 1])
+                with col_edit:
+                    if st.button("✏️ 메모 수정", key=f"edit_{w['id']}"):
+                        st.session_state[f"editing_{w['id']}"] = True
+                with col_del:
+                    if st.button("🗑️ 삭제", key=f"del_{w['id']}"):
+                        db.delete_word(w["id"])
+                        st.rerun()
+
+                if st.session_state.get(f"editing_{w['id']}"):
+                    new_memo = st.text_area(
+                        "메모 수정",
+                        value=w.get("memo", ""),
+                        key=f"new_memo_{w['id']}",
                     )
-                    _render_word_body(w)
-
-                    if w.get("tags"):
-                        st.caption("태그  " + "  ".join(f"`{t}`" for t in w["tags"]))
-
-                    if w.get("memo"):
-                        st.markdown(f"**메모** &nbsp; {w['memo']}")
-
-                    st.caption(f"저장일: {str(w.get('created_at', ''))[:10]}")
-
-                    col_edit, col_del = st.columns([1, 1])
-                    with col_edit:
-                        if st.button("✏️ 메모 수정", key=f"edit_{w['id']}"):
-                            st.session_state[f"editing_{w['id']}"] = True
-                    with col_del:
-                        if st.button("🗑️ 삭제", key=f"del_{w['id']}"):
-                            db.delete_word(w["id"])
-                            st.session_state.pop("active_word_id", None)
-                            st.rerun()
-
-                    if st.session_state.get(f"editing_{w['id']}"):
-                        new_memo = st.text_area(
-                            "메모 수정",
-                            value=w.get("memo", ""),
-                            key=f"new_memo_{w['id']}",
-                        )
-                        new_tag_str = st.text_input(
-                            "태그 수정 (쉼표로 구분)",
-                            value=", ".join(w.get("tags") or []),
-                            key=f"new_tags_{w['id']}",
-                        )
-                        if st.button("저장", key=f"save_edit_{w['id']}"):
-                            updated_tags = [t.strip() for t in new_tag_str.split(",") if t.strip()]
-                            db.update_memo_tags(w["id"], new_memo, updated_tags)
-                            st.session_state.pop(f"editing_{w['id']}", None)
-                            st.rerun()
+                    new_tag_str = st.text_input(
+                        "태그 수정 (쉼표로 구분)",
+                        value=", ".join(w.get("tags") or []),
+                        key=f"new_tags_{w['id']}",
+                    )
+                    if st.button("저장", key=f"save_edit_{w['id']}"):
+                        updated_tags = [t.strip() for t in new_tag_str.split(",") if t.strip()]
+                        db.update_memo_tags(w["id"], new_memo, updated_tags)
+                        st.session_state.pop(f"editing_{w['id']}", None)
+                        st.rerun()
 
 
 # ── 일괄 입력 탭 ──────────────────────────────────────────────────────────────
