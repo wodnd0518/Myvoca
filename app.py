@@ -323,9 +323,15 @@ with tab_vocab:
             memo_preview = ('  *' + memo[:22] + ('…' if len(memo) > 22 else '') + '*') if memo else ''
             with st.expander(f"**{w['word']}**{memo_preview}"):
                 copy_val = json.dumps(f"{w['word']}\n{w.get('meaning_ko', '')}")
+                word_val = json.dumps(w['word'])
+                _s = "cursor:pointer;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(99,102,241,0.3);background:rgba(99,102,241,0.08);color:#6366f1;font-size:13px;font-weight:600;font-family:inherit;"
                 components.html(
-                    f"""<script>var _t={copy_val};</script><button onclick="var e=document.createElement('textarea');e.value=_t;document.body.appendChild(e);e.select();document.execCommand('copy');document.body.removeChild(e);this.textContent='✅ 복사됨';setTimeout(()=>this.textContent='📋 복사',1500);" style="cursor:pointer;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(99,102,241,0.3);background:rgba(99,102,241,0.08);color:#6366f1;font-size:13px;font-weight:600;font-family:inherit;">📋 복사</button>""",
-                    height=40,
+                    f"""<script>var _t={copy_val};var _w={word_val};</script>"""
+                    f"""<div style="display:flex;gap:8px;">"""
+                    f"""<button onclick="var e=document.createElement('textarea');e.value=_t;document.body.appendChild(e);e.select();document.execCommand('copy');document.body.removeChild(e);this.textContent='✅ 복사됨';setTimeout(()=>this.textContent='📋 복사',1500);" style="{_s}">📋 복사</button>"""
+                    f"""<button onclick="window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(_w);u.lang='en-US';u.rate=0.85;window.speechSynthesis.speak(u);this.textContent='🔊 재생중';setTimeout(()=>this.textContent='🔊 듣기',2500);" style="{_s}">🔊 듣기</button>"""
+                    f"""</div>""",
+                    height=44,
                 )
                 _render_word_body(w)
 
@@ -395,7 +401,16 @@ with tab_bulk:
         key=f"bulk_text_{_bulk_key}",
     )
 
-    if st.button("미리보기", use_container_width=True) and bulk_text:
+    col_prev, col_reset = st.columns([3, 1])
+    with col_prev:
+        preview_clicked = st.button("미리보기", use_container_width=True)
+    with col_reset:
+        if st.button("초기화", use_container_width=True):
+            st.session_state.pop("bulk_parsed", None)
+            st.session_state["bulk_key"] = _bulk_key + 1
+            st.rerun()
+
+    if preview_clicked and bulk_text:
         parsed = parse_bulk_text(bulk_text)
         if parsed:
             st.session_state["bulk_parsed"] = parsed
