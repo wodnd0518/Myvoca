@@ -31,7 +31,7 @@ def parse_bulk_text(text: str) -> list[dict]:
     return [e for line in text.splitlines() if (e := _parse_line(line)) and e["word"]]
 
 
-def _render_word_body(data: dict) -> None:
+def _render_word_body(data: dict, show_example_tts: bool = False) -> None:
     st.markdown(data.get("meaning_ko", ""))
     if data.get("alternatives"):
         st.markdown("**다른 표현** &nbsp; " + " · ".join(data["alternatives"]))
@@ -41,9 +41,34 @@ def _render_word_body(data: dict) -> None:
         st.info(data["context"])
     if data.get("examples"):
         st.markdown("**예문**")
-        for ex in data["examples"]:
-            st.markdown(f"- {ex['en']}")
-            st.caption(f"  {ex['ko']}")
+        if show_example_tts:
+            parts = [
+                "<style>"
+                ".et{font-size:14px;}"
+                ".ek{font-size:12px;padding-left:12px;margin-top:2px;}"
+                "@media(prefers-color-scheme:dark){.et{color:#e0e0e0}.ek{color:#999}}"
+                "@media(prefers-color-scheme:light){.et{color:#1a1a1a}.ek{color:#555}}"
+                "</style>"
+            ]
+            for ex in data["examples"]:
+                en_val = json.dumps(ex["en"])
+                en_safe = ex["en"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                ko_safe = ex["ko"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                parts.append(
+                    f'<div style="margin-bottom:10px;">'
+                    f'<div style="display:flex;align-items:center;gap:6px;">'
+                    f'<span class="et">· {en_safe}</span>'
+                    f'<button onclick="window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance({en_val});u.lang=\'en-US\';u.rate=0.85;window.speechSynthesis.speak(u);" '
+                    f'style="cursor:pointer;padding:1px 7px;border-radius:6px;border:1px solid rgba(99,102,241,0.3);background:rgba(99,102,241,0.08);color:#6366f1;font-size:11px;font-weight:600;font-family:sans-serif;white-space:nowrap;flex-shrink:0;">🔊</button>'
+                    f'</div>'
+                    f'<div class="ek">{ko_safe}</div>'
+                    f'</div>'
+                )
+            components.html("".join(parts), height=len(data["examples"]) * 60 + 10)
+        else:
+            for ex in data["examples"]:
+                st.markdown(f"- {ex['en']}")
+                st.caption(f"  {ex['ko']}")
 
 
 st.set_page_config(page_title="나만의 단어장", page_icon="📖", layout="centered")
@@ -333,7 +358,7 @@ with tab_vocab:
                     f"""</div>""",
                     height=44,
                 )
-                _render_word_body(w)
+                _render_word_body(w, show_example_tts=True)
 
                 if w.get("tags"):
                     st.caption("태그  " + "  ".join(f"`{t}`" for t in w["tags"]))
