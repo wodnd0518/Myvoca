@@ -59,7 +59,7 @@ def _render_word_body(data: dict, show_example_tts: bool = False) -> None:
                     f'<div style="margin-bottom:10px;">'
                     f'<div style="display:flex;align-items:center;gap:6px;">'
                     f'<span class="et">· {en_safe}</span>'
-                    f'<button onclick="window.speechSynthesis.cancel();this.textContent=\'⏳\';setTimeout(function(b){{var u=new SpeechSynthesisUtterance(_exs[{i}]);u.lang=\'en-US\';u.rate=0.85;window.speechSynthesis.speak(u);b.textContent=\'🔊\';setTimeout(()=>b.textContent=\'🔊\',2500);}},1000,this);" '
+                    f'<button onclick="window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(_exs[{i}]);u.lang=\'en-US\';u.rate=0.85;window.speechSynthesis.speak(u);" '
                     f'style="cursor:pointer;padding:1px 7px;border-radius:6px;border:1px solid rgba(99,102,241,0.3);background:rgba(99,102,241,0.08);color:#6366f1;font-size:11px;font-weight:600;font-family:sans-serif;white-space:nowrap;flex-shrink:0;">🔊</button>'
                     f'</div>'
                     f'<div class="ek">{ko_safe}</div>'
@@ -355,7 +355,7 @@ with tab_vocab:
                     f"""<script>var _t={copy_val};var _w={word_val};</script>"""
                     f"""<div style="display:flex;gap:8px;">"""
                     f"""<button onclick="var e=document.createElement('textarea');e.value=_t;document.body.appendChild(e);e.select();document.execCommand('copy');document.body.removeChild(e);this.textContent='✅ 복사됨';setTimeout(()=>this.textContent='📋 복사',1500);" style="{_s}">📋 복사</button>"""
-                    f"""<button onclick="window.speechSynthesis.cancel();this.textContent='⏳';setTimeout(function(b){{var u=new SpeechSynthesisUtterance(_w);u.lang='en-US';u.rate=0.85;window.speechSynthesis.speak(u);b.textContent='🔊 재생중';setTimeout(()=>b.textContent='🔊 듣기',3000);}},1000,this);" style="{_s}">🔊 듣기</button>"""
+                    f"""<button onclick="window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(_w);u.lang='en-US';u.rate=0.85;window.speechSynthesis.speak(u);this.textContent='🔊 재생중';setTimeout(()=>this.textContent='🔊 듣기',2500);" style="{_s}">🔊 듣기</button>"""
                     f"""</div>""",
                     height=44,
                 )
