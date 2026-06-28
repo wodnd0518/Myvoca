@@ -42,7 +42,9 @@ def _render_word_body(data: dict, show_example_tts: bool = False) -> None:
     if data.get("examples"):
         st.markdown("**예문**")
         if show_example_tts:
+            sentences_js = json.dumps([ex["en"] for ex in data["examples"]])
             parts = [
+                f"<script>var _exs={sentences_js};</script>"
                 "<style>"
                 ".et{font-size:14px;}"
                 ".ek{font-size:12px;padding-left:12px;margin-top:2px;}"
@@ -50,15 +52,14 @@ def _render_word_body(data: dict, show_example_tts: bool = False) -> None:
                 "@media(prefers-color-scheme:light){.et{color:#1a1a1a}.ek{color:#555}}"
                 "</style>"
             ]
-            for ex in data["examples"]:
-                en_val = json.dumps(ex["en"])
+            for i, ex in enumerate(data["examples"]):
                 en_safe = ex["en"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                 ko_safe = ex["ko"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                 parts.append(
                     f'<div style="margin-bottom:10px;">'
                     f'<div style="display:flex;align-items:center;gap:6px;">'
                     f'<span class="et">· {en_safe}</span>'
-                    f'<button onclick="window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance({en_val});u.lang=\'en-US\';u.rate=0.85;window.speechSynthesis.speak(u);" '
+                    f'<button onclick="window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(_exs[{i}]);u.lang=\'en-US\';u.rate=0.85;window.speechSynthesis.speak(u);" '
                     f'style="cursor:pointer;padding:1px 7px;border-radius:6px;border:1px solid rgba(99,102,241,0.3);background:rgba(99,102,241,0.08);color:#6366f1;font-size:11px;font-weight:600;font-family:sans-serif;white-space:nowrap;flex-shrink:0;">🔊</button>'
                     f'</div>'
                     f'<div class="ek">{ko_safe}</div>'
